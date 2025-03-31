@@ -38,16 +38,16 @@ def main():
     parser.add_argument("logs_path", type=str, metavar="logs_path", help="logs_path")
     parser.add_argument("--skip_test", type=boolean, default=True)
     parser.add_argument("--df_test_path", type=str, default=None)
-    parser.add_argument("--try_harder", type=boolean, default=False)
+    parser.add_argument("--bonus_challenge", type=boolean, default=True,)
 
-    parser.add_argument("--bin_width", type=float, default=1., help="bin_width")
+    parser.add_argument("--bin_width", type=float, default=0.1, help="bin_width")
     parser.add_argument("--batch_size", type=int, default=128, help="Bsz")
-    parser.add_argument("--devices",type=ast.literal_eval,default=1)
+    parser.add_argument("--devices",type=ast.literal_eval,default=[0])
     parser.add_argument("--precision", type=str, default="bf16-mixed")
 
-    parser.add_argument("--layer_dim", type=int, default=128, help="layer dim")
+    parser.add_argument("--layer_dim", type=int, default=1024, help="layer dim")
     parser.add_argument("--n_layers", type=int, default=3, help="n layers in mlp")
-    parser.add_argument("--dropout", type=float, default=0.2, help="dropout")
+    parser.add_argument("--dropout", type=float, default=0.25, help="dropout")
     parser.add_argument("--lr", type=float, default=0.0001)
 
     parser.add_argument("--bitwise_loss", type=str, default=None, help="")
@@ -61,10 +61,10 @@ def main():
     parser.add_argument("--bitwise_weighted", type=boolean, default=False, help="")
     parser.add_argument("--bitwise_fl_gamma", type=float, default=2.0, help="")
 
-    parser.add_argument("--fpwise_iou_jml_v", type=boolean, default=False, help="")
+    parser.add_argument("--fpwise_iou_jml_v", type=boolean, default=True, help="")
 
     parser.add_argument("--rankwise_temp", type=float, default=1.0, help="")
-    parser.add_argument("--rankwise_dropout", type=float, default=0.2, help="")
+    parser.add_argument("--rankwise_dropout", type=float, default=0.25, help="")
     parser.add_argument("--rankwise_sim_func", type=str, default="cossim", help="")
     parser.add_argument("--rankwise_projector", type=boolean, default=False, help="")
     
@@ -78,9 +78,9 @@ def main():
         pth=args.dataset_path,
         fp_pth=os.path.join(args.helper_files_dir, "fp_4096.npy"),
         inchi_pth=os.path.join(args.helper_files_dir, "inchis.npy"),
-        candidates_pth=os.path.join(args.helper_files_dir, "MassSpecGym_retrieval_candidates_formula.json"),
-        candidates_fp_pth=os.path.join(args.helper_files_dir, "MassSpecGym_retrieval_candidates_formula_fps.npz"),
-        candidates_inchi_pth=os.path.join(args.helper_files_dir, "MassSpecGym_retrieval_candidates_formula_inchi.npz"),
+        candidates_pth=os.path.join(args.helper_files_dir, "MassSpecGym_retrieval_candidates_%s.json" % ("formula" if args.bonus_challenge else "mass")),
+        candidates_fp_pth=os.path.join(args.helper_files_dir, "MassSpecGym_retrieval_candidates_%s_fps.npz" % ("formula" if args.bonus_challenge else "mass")),
+        candidates_inchi_pth=os.path.join(args.helper_files_dir, "MassSpecGym_retrieval_candidates_%s_inchi.npz" % ("formula" if args.bonus_challenge else "mass")),
     )
 
     data_module = MassSpecDataModule(
@@ -147,26 +147,34 @@ def main():
     )
 
     val_ckpts = [
-        ModelCheckpoint(monitor="val_cossim_hit_rate@20", mode="max", filename="cossim-{epoch}-{step}"),
-        ModelCheckpoint(monitor="val_tanim_hit_rate@20", mode="max", filename="tanim-{epoch}-{step}"),
-        ModelCheckpoint(monitor="val_contiou_hit_rate@20", mode="max", filename="contiou-{epoch}-{step}"),
+        ModelCheckpoint(monitor=None, filename="last-{epoch}-{step}"),
+        ModelCheckpoint(monitor="val_loss", mode="max", filename="loss-{epoch}-{step}"),
+        ModelCheckpoint(monitor="val_fingerprint_av_tanim", mode="max", filename="fpacctanim-{epoch}-{step}"),
+        ModelCheckpoint(monitor="val_cossim_hit_rate@1", mode="max", filename="cossim1-{epoch}-{step}"),
+        ModelCheckpoint(monitor="val_tanim_hit_rate@1", mode="max", filename="tanim1-{epoch}-{step}"),
+        ModelCheckpoint(monitor="val_contiou_hit_rate@1", mode="max", filename="contiou1-{epoch}-{step}"),
+        ModelCheckpoint(monitor="val_cossim_hit_rate@5", mode="max", filename="cossim5-{epoch}-{step}"),
+        ModelCheckpoint(monitor="val_tanim_hit_rate@5", mode="max", filename="tanim5-{epoch}-{step}"),
+        ModelCheckpoint(monitor="val_contiou_hit_rate@5", mode="max", filename="contiou5-{epoch}-{step}"),
+        ModelCheckpoint(monitor="val_cossim_hit_rate@20", mode="max", filename="cossim20-{epoch}-{step}"),
+        ModelCheckpoint(monitor="val_tanim_hit_rate@20", mode="max", filename="tanim20-{epoch}-{step}"),
+        ModelCheckpoint(monitor="val_contiou_hit_rate@20", mode="max", filename="contiou20-{epoch}-{step}"),
     ]
     if args.rankwise_loss is not None:
-        val_ckpts += [ModelCheckpoint(monitor="val_reranker_hit_rate@20", mode="max", filename="reranker-{epoch}-{step}")]
+        val_ckpts += [
+            ModelCheckpoint(monitor="val_ranker_hit_rate@1", mode="max", filename="ranker1-{epoch}-{step}"),
+            ModelCheckpoint(monitor="val_ranker_hit_rate@5", mode="max", filename="ranker5-{epoch}-{step}"),
+            ModelCheckpoint(monitor="val_ranker_hit_rate@20", mode="max", filename="ranker20-{epoch}-{step}"),
+        ]
     
     callbacks = val_ckpts
-    
-    if args.try_harder:
-        max_epochs = 250
-    else:
-        max_epochs = 50
 
     trainer = Trainer(
         accelerator="gpu",
         devices=args.devices,
         strategy="auto",
         gradient_clip_val=1,
-        max_epochs=max_epochs,
+        max_epochs=50,
         callbacks=callbacks,
         plugins=[LightningEnvironment()],
         logger=logger,

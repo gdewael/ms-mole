@@ -204,7 +204,7 @@ class FingerprintPredicter(RetrievalMassSpecGymModel):
                 batch["labels"],
                 batch["batch_ptr"],
                 stage=Stage("val"),
-                name="reranker"
+                name="ranker"
             )
 
         return dict(loss=loss)
