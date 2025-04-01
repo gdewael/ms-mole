@@ -93,9 +93,9 @@ def main():
     fpwise_loss = str(sys.argv[7])
     rankwise_loss = str(sys.argv[8])
     weighted = str(sys.argv[9])
-    device = int(sys.argv[11])
-    n_models_to_tune = int(sys.argv[12])
-    bonus_challenge = str(sys.argv[13])
+    device = int(sys.argv[10])
+    n_models_to_tune = int(sys.argv[11])
+    bonus_challenge = str(sys.argv[12])
 
 
     if bitwise_loss == "None":
