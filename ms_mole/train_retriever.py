@@ -68,7 +68,8 @@ def main():
     parser.add_argument("--rankwise_sim_func", type=str, default="cossim", help="")
     parser.add_argument("--rankwise_projector", type=boolean, default=False, help="")
     
-
+    parser.add_argument("--checkpoint_path", type=str, default=None, help="")
+    parser.add_argument("--freeze_checkpoint", type=boolean, default=False, help="")
 
     args = parser.parse_args()
 
@@ -138,8 +139,24 @@ def main():
         bitwise_kwargs = loss_kwargs_dict[args.bitwise_loss], # {"weighted" : False} / {"weighted" : False, "gamma" : 2}
         fpwise_kwargs = loss_kwargs_dict[args.fpwise_loss], # {} / {"jml_version" : True}
         rankwise_kwargs = loss_kwargs_dict[args.rankwise_loss], # {"temp": 0.1, "n_bits" : 4096, "dropout":0.2, sim_func:"cossim", "projector":False} / all same without sim_func
-
     )
+
+    if args.checkpoint_path is not None:
+        pretrained_model = FingerprintPredicter.load_from_checkpoint(args.checkpoint_path)
+
+        pretrained_mlp_state_dict = pretrained_model.mlp.state_dict()
+        model_mlp_statedict = model.mlp.state_dict()
+        model_mlp_statedict.update(pretrained_mlp_state_dict)
+        model.mlp.load_state_dict(model_mlp_statedict)
+
+        pretrained_fppredhead_state_dict = pretrained_model.loss.fp_pred_head.state_dict()
+        model_fppredhead_statedict = model.loss.fp_pred_head.state_dict()
+        model_fppredhead_statedict.update(pretrained_fppredhead_state_dict)
+        model.loss.fp_pred_head.load_state_dict(model_fppredhead_statedict)
+
+        if args.freeze_checkpoint:
+            model.mlp.requires_grad_(False)
+            model.loss.fp_pred_head.requires_grad_(False)
 
     logger = TensorBoardLogger(
         "/".join(args.logs_path.split("/")[:-1]),

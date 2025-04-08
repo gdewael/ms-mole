@@ -50,6 +50,8 @@ f"""python {script_loc} \
 --rankwise_lambd {p["lambdas"][2]} \
 --bitwise_weighted {p["bitwise_weighted"]} \
 --rankwise_temp {p["rankwise_temp"]} \
+--checkpoint_path {p["ckpt_path"]} \f
+--freeze_checkpoint {p["freeze_ckpt"]} \
 """
         )
 
@@ -96,6 +98,8 @@ def main():
     device = int(sys.argv[10])
     n_models_to_tune = int(sys.argv[11])
     bonus_challenge = str(sys.argv[12])
+    ckpt_path = str(sys.argv[13])
+    freeze_ckpt = str(sys.argv[14])
 
 
     if bitwise_loss == "None":
@@ -105,10 +109,13 @@ def main():
     if rankwise_loss == "None":
         rankwise_loss = None
 
+    if ckpt_path == "None":
+        ckpt_path = None
+
     grid = {
         "devices" : [[device]],
         "lr" : [0.00005, 0.00007, 0.0001, 0.0003, 0.0005, 0.0007, 0.001],
-        "batch_size" : [32, 64, 128, 256],
+        "batch_size" : [32, 64, 128],
         "bitwise_loss" : [bitwise_loss],
         "fpwise_loss" : [fpwise_loss],
         "rankwise_loss" : [rankwise_loss],
@@ -116,6 +123,8 @@ def main():
         "bitwise_weighted" : [weighted == "True"],
         "rankwise_temp" : [0.1, 0.5, 1.0, 5, 10],
         "bonus_challenge" : [bonus_challenge],
+        "ckpt_path" : [ckpt_path],
+        "freeze_ckpt" : [freeze_ckpt == "True"]
     }
 
     param_list = list(ParameterSampler(grid, n_iter=n_models_to_tune))
