@@ -99,6 +99,8 @@ def main():
         args.fpwise_loss = None
     if args.rankwise_loss == "None":
         args.rankwise_loss = None
+    if args.checkpoint_path == "None":
+        args.checkpoint_path = None
 
     loss_kwargs_dict = {
         "bce" : {"weighted" : args.bitwise_weighted},

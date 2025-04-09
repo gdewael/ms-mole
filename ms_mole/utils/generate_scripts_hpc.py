@@ -50,7 +50,7 @@ f"""python {script_loc} \
 --rankwise_lambd {p["lambdas"][2]} \
 --bitwise_weighted {p["bitwise_weighted"]} \
 --rankwise_temp {p["rankwise_temp"]} \
---checkpoint_path {p["ckpt_path"]} \f
+--checkpoint_path {p["ckpt_path"]} \
 --freeze_checkpoint {p["freeze_ckpt"]} \
 """
         )
