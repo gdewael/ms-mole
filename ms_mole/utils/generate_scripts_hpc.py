@@ -52,6 +52,8 @@ f"""python {script_loc} \
 --rankwise_temp {p["rankwise_temp"]} \
 --checkpoint_path {p["ckpt_path"]} \
 --freeze_checkpoint {p["freeze_ckpt"]} \
+--rankwise_listwise {p["rankwise_listwise"]} \
+--rnn_clfchain {p["rnncc"]} \
 """
         )
 
@@ -59,7 +61,9 @@ f"""python {script_loc} \
 def determine_lambda_grid(bitwise_loss, fpwise_loss, rankwise_loss):
     losses = (bitwise_loss, fpwise_loss, rankwise_loss)
     losses_present = [ix for ix, l in enumerate(losses) if l != None]
-
+    if len(losses_present) == 0:
+        return [[0.0, 0.0, 0.0]]
+    
     if len(losses_present) == 1:
         lambdas = [0.0, 0.0, 0.0]
         lambdas[losses_present[0]] = 1.0
@@ -100,6 +104,8 @@ def main():
     bonus_challenge = str(sys.argv[12])
     ckpt_path = str(sys.argv[13])
     freeze_ckpt = str(sys.argv[14])
+    rankwise_listwise = str(sys.argv[15])
+    rnncc = str(sys.argv[16])
 
 
     if bitwise_loss == "None":
@@ -124,7 +130,9 @@ def main():
         "rankwise_temp" : [0.1, 0.5, 1.0, 5, 10],
         "bonus_challenge" : [bonus_challenge],
         "ckpt_path" : [ckpt_path],
-        "freeze_ckpt" : [freeze_ckpt == "True"]
+        "freeze_ckpt" : [freeze_ckpt == "True"],
+        "rankwise_listwise" : [rankwise_listwise == "True"],
+        "rnncc" : [rnncc == "True"],
     }
 
     param_list = list(ParameterSampler(grid, n_iter=n_models_to_tune))

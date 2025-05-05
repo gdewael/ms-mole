@@ -53,13 +53,14 @@ class FingerprintPredicter(RetrievalMassSpecGymModel):
         bitwise_loss = None, # "bce", "fl"
         fpwise_loss = None, # "cossim", "iou"
         rankwise_loss = None, # "bienc", "cross"
+        rnn_clfchain=False,
         bitwise_lambd = 1.0,
         fpwise_lambd = 1.0,
         rankwise_lambd = 1.0,
         bitwise_kwargs = {}, # {"weighted" : False} / {"weighted" : False, "gamma" : 2}
         fpwise_kwargs = {}, # {} / {"jml_version" : True}
         rankwise_kwargs = {}, # {"temp": 0.1, "n_bits" : 4096, "dropout":0.2, sim_func:"cossim", "projector":False} / all same without sim_func
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.mlp = MLP(
@@ -75,6 +76,7 @@ class FingerprintPredicter(RetrievalMassSpecGymModel):
             bitwise_loss = bitwise_loss,
             fpwise_loss = fpwise_loss,
             rankwise_loss = rankwise_loss,
+            rnn_clfchain = rnn_clfchain,
             bitwise_lambd = bitwise_lambd,
             fpwise_lambd = fpwise_lambd,
             rankwise_lambd = rankwise_lambd,
@@ -82,6 +84,8 @@ class FingerprintPredicter(RetrievalMassSpecGymModel):
             fpwise_kwargs = fpwise_kwargs,
             rankwise_kwargs = rankwise_kwargs,
         )
+
+        self.rnnchain_mode = rnn_clfchain
 
     def forward(self, x):
         return self.mlp(x)
@@ -125,8 +129,10 @@ class FingerprintPredicter(RetrievalMassSpecGymModel):
         # Calculate loss
         loss = self.loss(embedding, fp_true, cands, batch_ptr, batch["labels"])
 
-
-        fp_pred = F.sigmoid(self.loss.fp_pred_head(embedding))
+        if not self.rnnchain_mode:
+            fp_pred = F.sigmoid(self.loss.fp_pred_head(embedding))
+        else:
+            fp_pred = self.loss.rnncc.infer(embedding).to(self.dtype)
         # Evaluation performance on fingerprint prediction (optional)
 
         tanimotos = batch_samplewise_tanimoto(fp_pred, fp_true, reduce=False)

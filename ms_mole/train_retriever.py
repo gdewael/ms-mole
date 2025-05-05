@@ -36,6 +36,7 @@ def main():
     parser.add_argument("dataset_path", type=str, metavar="dataset_path", help="dataset_path")
     parser.add_argument("helper_files_dir", type=str, metavar="helper_files_dir", help="helper_files_dir")
     parser.add_argument("logs_path", type=str, metavar="logs_path", help="logs_path")
+    
     parser.add_argument("--skip_test", type=boolean, default=True)
     parser.add_argument("--df_test_path", type=str, default=None)
     parser.add_argument("--bonus_challenge", type=boolean, default=True,)
@@ -53,6 +54,7 @@ def main():
     parser.add_argument("--bitwise_loss", type=str, default=None, help="")
     parser.add_argument("--fpwise_loss", type=str, default=None, help="")
     parser.add_argument("--rankwise_loss", type=str, default=None, help="")
+    parser.add_argument("--rnn_clfchain", type=boolean, default=False, help="")
 
     parser.add_argument("--bitwise_lambd", type=float, default=1.0, help="")
     parser.add_argument("--fpwise_lambd", type=float, default=1.0, help="")
@@ -67,6 +69,7 @@ def main():
     parser.add_argument("--rankwise_dropout", type=float, default=0.25, help="")
     parser.add_argument("--rankwise_sim_func", type=str, default="cossim", help="")
     parser.add_argument("--rankwise_projector", type=boolean, default=False, help="")
+    parser.add_argument("--rankwise_listwise", type=boolean, default=True, help="")
     
     parser.add_argument("--checkpoint_path", type=str, default=None, help="")
     parser.add_argument("--freeze_checkpoint", type=boolean, default=False, help="")
@@ -112,13 +115,15 @@ def main():
             "n_bits" : 4096,
             "dropout":args.rankwise_dropout,
             "sim_func": args.rankwise_sim_func,
-            "projector":args.rankwise_projector
+            "projector":args.rankwise_projector,
+            "listwise": args.rankwise_listwise
             },
         "cross" : {
             "temp": args.rankwise_temp,
             "n_bits" : 4096,
             "dropout":args.rankwise_dropout,
-            "projector":args.rankwise_projector
+            "projector":args.rankwise_projector,
+            "listwise": args.rankwise_listwise
             },
         None : {},
     }
@@ -135,6 +140,7 @@ def main():
         bitwise_loss = args.bitwise_loss, # "bce", "fl"
         fpwise_loss = args.fpwise_loss, # "cossim", "iou"
         rankwise_loss = args.rankwise_loss, # "bienc", "cross"
+        rnn_clfchain = args.rnn_clfchain,
         bitwise_lambd = args.bitwise_lambd,
         fpwise_lambd = args.fpwise_lambd,
         rankwise_lambd = args.rankwise_lambd,
