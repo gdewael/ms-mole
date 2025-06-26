@@ -2,6 +2,9 @@ from massspecgym.data.datasets import RetrievalDataset
 import numpy as np
 import torch
 
+def bits_to_fparray(arr):
+    return np.unpackbits(arr).reshape(-1, 4096).astype(bool)
+
 class RetrievalDataset_PrecompFPandInchi(RetrievalDataset):
     def __init__(
         self,
@@ -37,7 +40,7 @@ class RetrievalDataset_PrecompFPandInchi(RetrievalDataset):
 
         # Transform the query and candidate molecules
         item["mol"] = self.metadata["fp_4096"].iloc[i].astype(np.int32)
-        item["candidates"] = self.candidate_fps[item["smiles"]]
+        item["candidates"] = bits_to_fparray(self.candidate_fps[item["smiles"]])
         if isinstance(item["mol"], np.ndarray):
             item["mol"] = torch.as_tensor(item["mol"], dtype=self.dtype)
         if isinstance(item["candidates"], np.ndarray):
