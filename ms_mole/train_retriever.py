@@ -71,7 +71,7 @@ def main():
     )
     parser.add_argument("logs_path", type=str, metavar="logs_path", help="logs_path")
     parser.add_argument(
-        "--logging_file", type=str, metavar="logging_file", help="res.json"
+        "--logging_file", type=str, default="res.json"
     )
 
     parser.add_argument(
