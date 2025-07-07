@@ -91,8 +91,8 @@ def main():
     parser.add_argument("--devices", type=ast.literal_eval, default=[0])
     parser.add_argument("--precision", type=str, default="32-true")
 
-    parser.add_argument("--layer_dim", type=int, default=512, help="layer dim")
-    parser.add_argument("--n_layers", type=int, default=5, help="n layers in mlp")
+    parser.add_argument("--layer_dim", type=int, default=1024, help="layer dim")
+    parser.add_argument("--n_layers", type=int, default=3, help="n layers in mlp")
     parser.add_argument("--dropout", type=float, default=0.25, help="dropout")
     parser.add_argument("--lr", type=float, default=0.0001)
 
@@ -373,8 +373,8 @@ def main():
         )[0]
         test_res_dict[name] = res[monitor]
 
-    append_dict_to_json_file(val_res_dict, args.logging_file)
-    append_dict_to_json_file(test_res_dict, args.logging_file)
+    append_dict_to_json_file(val_res_dict, os.path.join(args.logs_path, args.logging_file))
+    append_dict_to_json_file(test_res_dict, os.path.join(args.logs_path, args.logging_file))
 
 
 if __name__ == "__main__":
