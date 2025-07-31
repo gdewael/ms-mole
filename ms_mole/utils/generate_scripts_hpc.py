@@ -35,7 +35,6 @@ def write_one_model_run(file, script_loc, data_folder, logs_folder, walltime, p)
 --fl_gamma {p["fl_gamma"]} \
 --temp {p["temp"]} \
 --rankwise_listwise {p["rankwise_listwise"]} \
---crossenc_on_fp {p["crossenc_on_fp"]} \
 """
         )
 
@@ -52,8 +51,7 @@ def main():
     n_max_cands = str(sys.argv[9])
     fl_gamma = str(sys.argv[10])
     temp = str(sys.argv[11])
-    crossenc_on_fp = str(sys.argv[12])
-    rankwise_listwise = str(sys.argv[13])
+    rankwise_listwise = str(sys.argv[12])
 
     parameter_dict = {
         "loss": loss,
@@ -63,7 +61,6 @@ def main():
         "fl_gamma": fl_gamma,
         "temp": temp,
         "rankwise_listwise": rankwise_listwise,
-        "crossenc_on_fp": crossenc_on_fp,
     }
     c = 0
     for lr in [5e-5, 7e-5, 1e-4, 3e-4, 5e-4]:

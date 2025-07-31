@@ -107,7 +107,8 @@ def main():
             "iou",
             "list_fp_cos",
             "list_embed_cos",
-            "list_cross",
+            "list_fp_cross",
+            "list_embed_cross",
             "rnn_01",
         ],
     )
@@ -115,7 +116,6 @@ def main():
     parser.add_argument("--temp", type=float, default=1.0, help="")
     parser.add_argument("--contrastive_dim", type=int, default=256, help="")
     parser.add_argument("--rankwise_listwise", type=boolean, default=True, help="")
-    parser.add_argument("--crossenc_on_fp", type=boolean, default=False, help="")
 
     parser.add_argument("--checkpoint_path", type=str, default=None, help="")
     parser.add_argument("--freeze_checkpoint", type=boolean, default=False, help="")
@@ -178,11 +178,18 @@ def main():
             "listwise": args.rankwise_listwise,
             "temp": args.temp,
         },
-        "list_cross": {
+        "list_fp_cross": {
             "contrastive_dim": args.contrastive_dim,
             "listwise": args.rankwise_listwise,
             "temp": args.temp,
-            "on_fp": args.crossenc_on_fp,
+            "on_fp": True,
+            "dropout": args.dropout,
+        },
+        "list_embed_cross": {
+            "contrastive_dim": args.contrastive_dim,
+            "listwise": args.rankwise_listwise,
+            "temp": args.temp,
+            "on_fp": False,
             "dropout": args.dropout,
         },
         "rnn_01": {},

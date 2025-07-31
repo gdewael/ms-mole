@@ -49,7 +49,8 @@ loss_mapper = {
     "iou": losses.FingerprintIoULoss,
     "list_fp_cos": losses.FingerprintContrastiveFPCosineLoss,
     "list_embed_cos": losses.FingerprintContrastiveEmbedCosineLoss,
-    "list_cross": losses.FingerprintContrastiveCrossEncoderLoss,
+    "list_fp_cross": losses.FingerprintContrastiveCrossEncoderLoss,
+    "list_embed_cross": losses.FingerprintContrastiveCrossEncoderLoss,
     "rnn_01": losses.FingerprintRNNSubset01MaximizerLoss,
 }
 
