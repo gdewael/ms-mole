@@ -77,7 +77,7 @@ def main():
     parser.add_argument(
         "--candidate_setting_train",
         type=str,
-        choices=["mass", "formula", "random", "hard"],
+        choices=["mass", "formula", "random", "hard", "masshard", "massrandom"],
     )
     parser.add_argument(
         "--candidate_setting_eval", type=str, choices=["mass", "formula"]
