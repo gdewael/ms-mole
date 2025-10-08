@@ -1,4 +1,4 @@
-# Source code for "SMALL MOLECULE RETRIEVAL FROM TANDEM MASS SPECTROMETRY: WHAT ARE WE OPTIMIZING FOR?"
+# Source code for "Small molecule retrieval from tandem mass spectrometry: What are we optimizing for?"
 
 Internally, all code is structured as a pip-installable package named ms-mole (Mass Spectral MOlecule Loss function Evaluation).
 
