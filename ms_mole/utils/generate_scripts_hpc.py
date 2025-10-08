@@ -7,7 +7,7 @@ import numpy as np
 def generate_prefix(walltime="12:00:00"):
 
     prefix = f"""#!/bin/bash
-#PBS -l nodes=1:ppn=8,gpus=1
+#PBS -l nodes=1:ppn=24,gpus=1
 #PBS -l walltime={walltime}
 
 cd $PBS_O_WORKDIR

@@ -8,9 +8,16 @@ import numpy as np
 from massspecgym.data.transforms import MolToInChIKey
 from tqdm import tqdm
 import json
+import sys
+
+pubchem_path = str(sys.argv[1]) #/path/to/MassSpecGym_retrieval_molecules_pubchem_118M.tsv
+MassSpecGymTSV = str(sys.argv[2]) #/path/to/MassSpecGym.tsv
+save_cands_json = str(sys.argv[3]) #/path/to/MassSpecGym_retrieval_candidates_masshard.json
+save_cands_fps = str(sys.argv[4]) #/path/to/MassSpecGym_retrieval_candidates_masshard_fps.npz
+save_cands_inchi=  str(sys.argv[5]) #/path/to/MassSpecGym_retrieval_candidates_masshard_inchi.npz
 
 df_pubchem = pd.read_csv(
-    "/data/home/gaetandw/msms/data/MassSpecGym_retrieval_molecules_pubchem_118M.tsv",
+   pubchem_path,
     sep="\t",
 )
 df_pubchem.shape, df_pubchem.columns
@@ -18,7 +25,7 @@ df_pubchem.shape, df_pubchem.columns
 
 df_pubchem = df_pubchem.sort_values("mass")
 
-df_massspecgym = pd.read_csv("/data/home/gaetandw/msms/data/MassSpecGym.tsv", sep="\t")
+df_massspecgym = pd.read_csv(MassSpecGymTSV, sep="\t")
 smiles = df_massspecgym["smiles"]
 print(len(df_massspecgym), len(smiles))
 smiles = smiles.drop_duplicates()
@@ -158,27 +165,16 @@ for sm in tqdm(list(cands), total=len(cands)):
     candidates_json_random[sm] = cands_random
 
 with open(
-    "/data/home/gaetandw/msms/data/MassSpecGym_retrieval_candidates_massrandom.json", "w"
-) as fp:
-    json.dump(candidates_json_random, fp)
-with open(
-    "/data/home/gaetandw/msms/data/MassSpecGym_retrieval_candidates_masshard.json", "w"
+    save_cands_json, "w"
 ) as fp:
     json.dump(candidates_json_hard, fp)
 
 np.savez(
-    "/data/home/gaetandw/msms/data/MassSpecGym_retrieval_candidates_massrandom_inchi.npz",
-    **candidates_inchi_random
-)
-np.savez(
-    "/data/home/gaetandw/msms/data/MassSpecGym_retrieval_candidates_masshard_inchi.npz",
+    save_cands_inchi,
     **candidates_inchi_hard
 )
+
 np.savez(
-    "/data/home/gaetandw/msms/data/MassSpecGym_retrieval_candidates_massrandom_fps.npz",
-    **candidates_fp_random
-)
-np.savez(
-    "/data/home/gaetandw/msms/data/MassSpecGym_retrieval_candidates_masshard_fps.npz",
+    save_cands_fps,
     **candidates_fp_hard
 )

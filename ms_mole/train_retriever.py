@@ -56,7 +56,7 @@ def main():
         pass
 
     parser = argparse.ArgumentParser(
-        description="Pre-training script.",
+        description="Molecular Retrieval script.",
         formatter_class=CustomFormatter,
     )
 
