@@ -24,7 +24,7 @@ class RetrievalDataset_PrecompFPandInchi(RetrievalDataset):
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.metadata["fp_4096"] = list(np.load(fp_pth))
+        self.metadata["fp_4096"] = list(bits_to_fparray(np.load(fp_pth)))
         self.metadata["inchikey"] = list(np.load(inchi_pth))
 
         self.candidate_fps = dict(np.load(candidates_fp_pth))

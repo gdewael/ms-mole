@@ -24,6 +24,24 @@ All code is packaged under `ms_mole`.
 
 - First, set up environment (see above).
 - Download all MassSpecGym data [here](https://huggingface.co/datasets/roman-bushuiev/MassSpecGym/tree/main)
-- Run `ms_mole/utils/precompute_fps_inchi_cands.py` (check script for command line arguments)
+- Run any of the following to generate candidate and target fingerprints:
+```bash
+python ms-mole/ms_mole/utils/precompute_fps_inchi_cands.py inchi data/MassSpecGym.tsv data/MassSpecGym_retrieval_candidates_mass.json data/MassSpecGym_retrieval_candidates_formula.json data/Inchis_targets.npy data/Inchis_masscands.npz data/Inchis_formulacands.npz
+
+python ms-mole/ms_mole/utils/precompute_fps_inchi_cands.py morgan_2_4096 data/MassSpecGym.tsv data/MassSpecGym_retrieval_candidates_mass.json data/MassSpecGym_retrieval_candidates_formula.json data/morgan_2_4096_targets.npy data/morgan_2_4096_masscands.npz data/morgan_2_4096_formulacands.npz
+python ms-mole/ms_mole/utils/precompute_fps_inchi_cands.py morgan_4_4096 data/MassSpecGym.tsv data/MassSpecGym_retrieval_candidates_mass.json data/MassSpecGym_retrieval_candidates_formula.json data/morgan_4_4096_targets.npy data/morgan_4_4096_masscands.npz data/morgan_4_4096_formulacands.npz
+python ms-mole/ms_mole/utils/precompute_fps_inchi_cands.py morgan_6_4096 data/MassSpecGym.tsv data/MassSpecGym_retrieval_candidates_mass.json data/MassSpecGym_retrieval_candidates_formula.json data/morgan_6_4096_targets.npy data/morgan_6_4096_masscands.npz data/morgan_6_4096_formulacands.npz
+python ms-mole/ms_mole/utils/precompute_fps_inchi_cands.py morgan_8_4096 data/MassSpecGym.tsv data/MassSpecGym_retrieval_candidates_mass.json data/MassSpecGym_retrieval_candidates_formula.json data/morgan_8_4096_targets.npy data/morgan_8_4096_masscands.npz data/morgan_8_4096_formulacands.npz
+
+python ms-mole/ms_mole/utils/precompute_fps_inchi_cands.py rdkit_4096 data/MassSpecGym.tsv data/MassSpecGym_retrieval_candidates_mass.json data/MassSpecGym_retrieval_candidates_formula.json data/rdkit_4096_targets.npy data/rdkit_4096_masscands.npz data/rdkit_4096_formulacands.npz
+
+python ms-mole/ms_mole/utils/precompute_fps_inchi_cands.py biosynfoni data/MassSpecGym.tsv data/MassSpecGym_retrieval_candidates_mass.json data/MassSpecGym_retrieval_candidates_formula.json data/biosynfoni_targets.npy data/biosynfoni_masscands.npz data/biosynfoni_formulacands.npz
+python ms-mole/ms_mole/utils/precompute_fps_inchi_cands.py maccs data/MassSpecGym.tsv data/MassSpecGym_retrieval_candidates_mass.json data/MassSpecGym_retrieval_candidates_formula.json data/maccs_targets.npy data/maccs_masscands.npz data/maccs_formulacands.npz
+python ms-mole/ms_mole/utils/precompute_fps_inchi_cands.py map4_4096 data/MassSpecGym.tsv data/MassSpecGym_retrieval_candidates_mass.json data/MassSpecGym_retrieval_candidates_formula.json data/map4_4096_targets.npy data/map4_4096_masscands.npz data/map4_4096_formulacands.npz
+```
+
 - (Optionally, run any of the precompute_hard_negative_cands scripts in the same folder to perform the appendix experiments with hard negative candidate sets).
 - The generated outputs make up auxiliary files used in the main training script: `ms_mole/train_retriever.py`. Run `python ms_mole/train_retriever.py --help` to see how to use the training script.
+
+
+

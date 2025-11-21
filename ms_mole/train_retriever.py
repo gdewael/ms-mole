@@ -75,12 +75,22 @@ def main():
     )
 
     parser.add_argument(
-        "--candidate_setting_train",
-        type=str,
-        choices=["mass", "formula", "random", "hard", "masshard", "massrandom"],
+        "--candidate_setting_train", type=str, choices=["mass", "formula"],
     )
     parser.add_argument(
-        "--candidate_setting_eval", type=str, choices=["mass", "formula"]
+        "--candidate_setting_eval", type=str, choices=["mass", "formula"],
+    )
+    parser.add_argument(
+        "--fp_type", type=str,
+        choices=[
+            "morgan_2_4096",
+            "morgan_4_4096",
+            "morgan_6_4096",
+            "morgan_8_4096",
+            "rdkit_4096",
+            "map4_4096"
+        ],
+        default="morgan_2_4096",
     )
     parser.add_argument("--n_max_cands", type=none_or_int, default=None)
 
@@ -124,21 +134,20 @@ def main():
 
     data_module = MsMoleMassSpecDataModule(
         pth=args.dataset_path,
-        fp_pth=os.path.join(args.helper_files_dir, "fp_4096.npy"),
-        inchi_pth=os.path.join(args.helper_files_dir, "inchis.npy"),
+        fp_pth=os.path.join(args.helper_files_dir, "%s_targets.npy" % args.fp_type),
+        inchi_pth=os.path.join(args.helper_files_dir, "Inchis_targets.npy"),
         train_cands_pth=os.path.join(
             args.helper_files_dir,
             "MassSpecGym_retrieval_candidates_%s.json" % args.candidate_setting_train,
         ),
         train_cands_fp_pth=os.path.join(
             args.helper_files_dir,
-            "MassSpecGym_retrieval_candidates_%s_fps.npz"
-            % args.candidate_setting_train,
+            "%s_%scands.npz"
+            % (args.fp_type, args.candidate_setting_train),
         ),
         train_cands_inchi_pth=os.path.join(
             args.helper_files_dir,
-            "MassSpecGym_retrieval_candidates_%s_inchi.npz"
-            % args.candidate_setting_train,
+            "Inchis_%scands.npz" % args.candidate_setting_train,
         ),
         valtest_cands_pth=os.path.join(
             args.helper_files_dir,
@@ -146,12 +155,12 @@ def main():
         ),
         valtest_cands_fp_pth=os.path.join(
             args.helper_files_dir,
-            "MassSpecGym_retrieval_candidates_%s_fps.npz" % args.candidate_setting_eval,
+            "%s_%scands.npz"
+            % (args.fp_type, args.candidate_setting_eval),
         ),
         valtest_cands_inchi_pth=os.path.join(
             args.helper_files_dir,
-            "MassSpecGym_retrieval_candidates_%s_inchi.npz"
-            % args.candidate_setting_eval,
+            "Inchis_%scands.npz" % args.candidate_setting_eval,
         ),
         train_n_max_cands=args.n_max_cands,
         batch_size=args.batch_size,
