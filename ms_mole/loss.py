@@ -316,3 +316,47 @@ class FingerprintRNNSubset01MaximizerLoss(FingerprintLossBase):
             else:
                 pred_labelvector[i, self.labelfreq_sort[seq_[i].cpu()]] = 1
         return pred_labelvector
+
+
+class CombinedLoss(FingerprintLossBase):
+    def __init__(self, embedding_dim, listwise=True, temp=1, comb_weight=0.5):
+        super().__init__(embedding_dim, pred_fp=True)
+
+        self.temp = temp
+        if listwise:
+            self.loss_compute_fn = listwise_contrastive_loss
+        else:
+            self.loss_compute_fn = pairwise_contrastive_loss
+        
+        self.w = comb_weight
+
+    def forward(self, embeds, true_fp, cand_fp, batch_ptr, labels):
+    
+        return (
+            self.w*self.contrastive_loss(embeds, true_fp, cand_fp, batch_ptr, labels) +
+            (1-self.w)*self.IoU_loss(embeds, true_fp)  
+        )   
+        
+
+    def reranker(self, embeds, cand_fp, batch_ptr):
+        preds = embeds.repeat_interleave(batch_ptr, dim=0)
+        return F.cosine_similarity(preds, cand_fp.to(preds.dtype))
+    
+    def contrastive_loss(self, embeds, true_fp, cand_fp, batch_ptr, labels):
+        pred_fp = F.sigmoid(self.pred_head(embeds))
+        scores = self.reranker(pred_fp, cand_fp, batch_ptr)
+
+        indexes = utils.batch_ptr_to_batch_idx(batch_ptr)
+        scores = unbatch(scores, indexes)
+        labels = unbatch(labels, indexes)
+
+        return self.loss_compute_fn(scores, labels, self.temp)
+    
+    def IoU_loss(self, embeds, true_fp, *args):
+        logits = self.pred_head(embeds)
+        preds = torch.sigmoid(logits)
+        intersection = (preds * true_fp.to(preds.dtype)).sum(-1)
+        total = (preds + true_fp.to(preds.dtype)).sum(-1)
+
+        iou = intersection / (total - intersection)
+        return 1 - iou.mean()

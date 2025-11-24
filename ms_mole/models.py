@@ -52,6 +52,7 @@ loss_mapper = {
     "list_fp_cross": losses.FingerprintContrastiveCrossEncoderLoss,
     "list_embed_cross": losses.FingerprintContrastiveCrossEncoderLoss,
     "rnn_01": losses.FingerprintRNNSubset01MaximizerLoss,
+    "combined" : losses.CombinedLoss,
 }
 
 
@@ -184,6 +185,7 @@ class FingerprintPredicter(RetrievalMassSpecGymModel):
                 losses.FingerprintContrastiveFPCosineLoss,
                 losses.FingerprintContrastiveEmbedCosineLoss,
                 losses.FingerprintContrastiveCrossEncoderLoss,
+                losses.CombinedLoss
             ),
         ):
             scores = self.loss.reranker(embed_or_fp, cand_fp, batch["batch_ptr"])

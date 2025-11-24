@@ -120,6 +120,7 @@ def main():
             "list_fp_cross",
             "list_embed_cross",
             "rnn_01",
+            "combined",
         ],
     )
     parser.add_argument("--fl_gamma", type=float, default=5.0, help="")
@@ -129,6 +130,7 @@ def main():
 
     parser.add_argument("--checkpoint_path", type=str, default=None, help="")
     parser.add_argument("--freeze_checkpoint", type=boolean, default=False, help="")
+    parser.add_argument("--comb_weight", type=float, default=0.5)
 
     args = parser.parse_args()
 
@@ -202,6 +204,11 @@ def main():
             "dropout": args.dropout,
         },
         "rnn_01": {},
+        "combined" : {
+            "listwise": args.rankwise_listwise,
+            "temp": args.temp,
+            "comb_weight": args.comb_weight,
+            },
     }
 
     model = FingerprintPredicter(
@@ -261,6 +268,7 @@ def main():
             loss.FingerprintContrastiveFPCosineLoss,
             loss.FingerprintContrastiveEmbedCosineLoss,
             loss.FingerprintContrastiveCrossEncoderLoss,
+            loss.CombinedLoss
         ),
     ):
         ranker1_ckpt = ModelCheckpoint(
