@@ -8,7 +8,7 @@ from torchmetrics import MeanMetric, CosineSimilarity
 from torch_geometric.utils import unbatch
 import massspecgym.utils as utils
 from torchmetrics.functional.retrieval import retrieval_hit_rate
-
+from depthcharge.transformers import SpectrumTransformerEncoder
 
 class MLP(nn.Module):
     def __init__(
@@ -282,6 +282,59 @@ class FingerprintPredicter(RetrievalMassSpecGymModel):
         optimizer.step(closure=optimizer_closure)
 
 
+class AttnAggregator(nn.Module):
+    def __init__(
+        self,
+        hidden_dim: int = None,
+    ):
+        super().__init__()
+
+        self.to_attn_logits = nn.Linear(hidden_dim, 1)
+
+    def forward(self, x, mask=None): # ..., L, D
+        """
+        Forward pass with optional masking. Aggregates over the second-to-last
+        dimension, so works with any number of leading batch dimensions.
+
+        Args:
+            x: Input tensor of shape (..., L, D)
+            mask: Optional boolean mask of shape (..., L) where False indicates
+                  positions to keep and True indicates positions to mask out.
+
+        Returns:
+            Aggregated tensor of shape (..., D)
+        """
+        attn_logits = self.to_attn_logits(x) # ..., L, 1
+
+        if mask is not None:
+            attn_logits = attn_logits.masked_fill(mask.unsqueeze(-1), float('-inf'))
+
+        attn_values = attn_logits.softmax(dim = -2) # ..., L, 1
+
+        return (x * attn_values).sum(-2) # ..., D
+    
+    
+class FingerprintPredicterTransformer(FingerprintPredicter):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.mlp = SpectrumTransformerEncoder(
+            d_model = 256,
+            nhead = 8,
+            dim_feedforward = 1024,
+            n_layers = 4,
+            dropout = 0.25,
+        )
+        self.aggregator = AttnAggregator(256)
+        
+    def forward(self, x):
+        mz_array = x[:, 1:, 0]
+        intensity_array = x[:, 1:, 1]
+        out, src_key_padding_mask = self.mlp(mz_array, intensity_array)
+        pooled = self.aggregator(out, mask=src_key_padding_mask)
+        return pooled
+        
+        
 def batch_samplewise_tanimoto(pred_fp, true_fp, threshold=0.5, reduce=False):
     _and = (true_fp.int() & (pred_fp > threshold)).sum(-1)
     _or = (true_fp.int() | (pred_fp > threshold)).sum(-1)
