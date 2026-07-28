@@ -80,6 +80,11 @@ def main():
     parser.add_argument(
         "--candidate_setting_eval", type=str, choices=["mass", "formula"],
     )
+    # Optional explicit paths — override the auto-constructed MassSpecGym filenames.
+    # Useful for non-MassSpecGym datasets (e.g. enveda).
+    parser.add_argument("--train_cands_pth", type=str, default=None)
+    parser.add_argument("--valtest_cands_pth", type=str, default=None
+    )
     parser.add_argument(
         "--fp_type", type=str,
         choices=[
@@ -134,14 +139,20 @@ def main():
 
     args = parser.parse_args()
 
+    _train_cands_pth = args.train_cands_pth or os.path.join(
+        args.helper_files_dir,
+        "MassSpecGym_retrieval_candidates_%s.json" % args.candidate_setting_train,
+    )
+    _valtest_cands_pth = args.valtest_cands_pth or os.path.join(
+        args.helper_files_dir,
+        "MassSpecGym_retrieval_candidates_%s.json" % args.candidate_setting_eval,
+    )
+
     data_module = MsMoleMassSpecDataModule(
         pth=args.dataset_path,
         fp_pth=os.path.join(args.helper_files_dir, "%s_targets.npy" % args.fp_type),
         inchi_pth=os.path.join(args.helper_files_dir, "Inchis_targets.npy"),
-        train_cands_pth=os.path.join(
-            args.helper_files_dir,
-            "MassSpecGym_retrieval_candidates_%s.json" % args.candidate_setting_train,
-        ),
+        train_cands_pth=_train_cands_pth,
         train_cands_fp_pth=os.path.join(
             args.helper_files_dir,
             "%s_%scands.npz"
@@ -151,10 +162,7 @@ def main():
             args.helper_files_dir,
             "Inchis_%scands.npz" % args.candidate_setting_train,
         ),
-        valtest_cands_pth=os.path.join(
-            args.helper_files_dir,
-            "MassSpecGym_retrieval_candidates_%s.json" % args.candidate_setting_eval,
-        ),
+        valtest_cands_pth=_valtest_cands_pth,
         valtest_cands_fp_pth=os.path.join(
             args.helper_files_dir,
             "%s_%scands.npz"
