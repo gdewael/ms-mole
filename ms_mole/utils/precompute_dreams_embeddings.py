@@ -28,7 +28,6 @@ from dreams.utils.dformats import DataFormatA
 from dreams.utils.data import SpectrumPreprocessor
 
 
-N_PEAKS = 100          # DreaMS expectation (DataFormatA default)
 EMBED_DIM = 1024       # DreaMS output size
 
 
@@ -36,21 +35,16 @@ class _SpectraDataset(Dataset):
     """Reads a MassSpecGym-format TSV and returns preprocessed DreaMS tensors."""
 
     def __init__(self, tsv_path):
-        self.preprocessor = SpectrumPreprocessor(DataFormatA(), n_highest_peaks=N_PEAKS)
+        self.preprocessor = SpectrumPreprocessor(DataFormatA(), n_highest_peaks=100)
         self.rows = []  # list of (mzs_array, ints_array, precursor_mz)
 
         print(f"Reading {tsv_path} ...")
         with open(tsv_path, newline="") as f:
             reader = csv.DictReader(f, delimiter="\t")
             for row in reader:
-                try:
-                    mzs = np.array([float(x) for x in row["mzs"].split(",")])
-                    ints = np.array([float(x) for x in row["intensities"].split(",")])
-                    prec_mz = float(row["precursor_mz"])
-                except (ValueError, KeyError):
-                    mzs = np.zeros((1,))
-                    ints = np.zeros((1,))
-                    prec_mz = 0.0
+                mzs = np.array([float(x) for x in row["mzs"].split(",")])
+                ints = np.array([float(x) for x in row["intensities"].split(",")])
+                prec_mz = float(row["precursor_mz"])
                 self.rows.append((mzs, ints, prec_mz))
 
         print(f"  {len(self.rows)} spectra loaded.")
@@ -61,10 +55,7 @@ class _SpectraDataset(Dataset):
     def __getitem__(self, i):
         mzs, ints, prec_mz = self.rows[i]
         spectrum = np.stack([mzs, ints], axis=1)  # (n_peaks, 2)
-        try:
-            ms = self.preprocessor(spectrum, prec_mz)  # (N_PEAKS, 2)
-        except Exception:
-            ms = np.zeros((N_PEAKS, 2), dtype=np.float32)
+        ms = self.preprocessor(spectrum, prec_mz, high_form=True)
         return torch.tensor(ms, dtype=torch.float32)
 
 
@@ -75,7 +66,7 @@ def main():
     parser.add_argument("tsv_path", type=str, help="Path to MassSpecGym-format .tsv")
     parser.add_argument("out_npy", type=str, help="Output path for (N, 1024) embeddings .npy")
     parser.add_argument("--batch_size", type=int, default=256)
-    parser.add_argument("--num_workers", type=int, default=4)
+    parser.add_argument("--num_workers", type=int, default=0)
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
     args = parser.parse_args()
 
