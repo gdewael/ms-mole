@@ -1,4 +1,6 @@
-# Source code for "Small molecule retrieval from tandem mass spectrometry: What are we optimizing for?"
+# Source code for "objective mismatch in molecular retrieval from tandem mass spectrometry"
+
+[Paper link](https://arxiv.org/abs/2602.16507), NeurIPS 2026.
 
 Internally, all code is structured as a pip-installable package named `ms-mole` (Mass Spectral MOlecule Loss function Evaluation).
 
