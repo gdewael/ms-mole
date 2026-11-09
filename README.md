@@ -1,4 +1,4 @@
-# Source code for "objective mismatch in molecular retrieval from tandem mass spectrometry"
+# Source code for "On objective mismatch in molecular retrieval from tandem mass spectrometry"
 
 [Paper link](https://arxiv.org/abs/2602.16507), NeurIPS 2026.
 
